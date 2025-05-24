@@ -1,26 +1,65 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { InjectRepository } from "@nestjs/typeorm";
+import * as bcrypt from "bcrypt";
+import { Teacher } from "../teacher/entities/teacher.entity";
+import { Admin } from "../admins/model/admin.model";
+import { Repository } from "typeorm";
+
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+  constructor(
+    private readonly jwtService: JwtService,
+
+    @InjectRepository(Admin)
+    private readonly adminRepo: Repository<Admin>,
+
+    @InjectRepository(Teacher)
+    private readonly teacherRepo: Repository<Teacher>
+  ) {}
+
+  // ✅ Hash parol
+  async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, 10);
   }
 
-  findAll() {
-    return `This action returns all auth`;
+  // ✅ Parolni tekshirish
+  async comparePassword(password: string, hash: string): Promise<boolean> {
+    return bcrypt.compare(password, hash);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
+  // ✅ JWT token generatsiyasi
+  async generateToken(payload: any) {
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
   }
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
+  // ✅ Login funksiyasi (admin yoki teacher uchun)
+  async login(email: string, password: string, role: "admin" | "teacher") {
+    let user;
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+    if (role === "admin") {
+      user = await this.adminRepo.findOneBy({ email }); 
+    } else if (role === "teacher") {
+      user = await this.teacherRepo.findOneBy({ email }); 
+    }
+    
+
+    if (!user) {
+      throw new UnauthorizedException("User not found");
+    }
+
+    const isMatch = await this.comparePassword(password, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedException("Invalid credentials");
+    }
+
+    return this.generateToken({
+      sub: user.id,
+      email: user.email,
+      role,
+    });
   }
 }

@@ -1,34 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { Controller, Post, Body, BadRequestException } from "@nestjs/common";
+import { AuthService } from "./auth.service";
+import { LoginDto } from "./dto/admin-login.dto";
 
-@Controller('auth')
+@Controller("auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post()
-  create(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.create(createAuthDto);
-  }
+  @Post("login")
+  async login(@Body() loginDto: LoginDto) {
+    const { email, password, role } = loginDto;
 
-  @Get()
-  findAll() {
-    return this.authService.findAll();
-  }
+    if (!role || (role !== "admin" && role !== "teacher")) {
+      throw new BadRequestException("Role must be either admin or teacher");
+    }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-    return this.authService.update(+id, updateAuthDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
+    return this.authService.login(email, password, role);
   }
 }

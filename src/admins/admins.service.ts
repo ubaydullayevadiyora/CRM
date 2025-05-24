@@ -1,36 +1,54 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { InjectModel } from "@nestjs/sequelize";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { Admin } from "./model/admin.model";
+import { AuthService } from "../auth/auth.service";
 import { CreateAdminDto } from "./dto/create-admin.dto";
 import { UpdateAdminDto } from "./dto/update-admin.dto";
-import { Admin } from "./model/admin.model";
-import * as bcrypt from "bcrypt";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
 
 @Injectable()
 export class AdminService {
-  constructor(@InjectModel(Admin) private adminModel: typeof Admin) {}
+  constructor(
+    @InjectRepository(Admin) private repoAdmin: Repository<Admin>,
+    private authService: AuthService
+  ) {}
 
   async create(dto: CreateAdminDto) {
-    const hashed = await bcrypt.hash(dto.password, 10);
-    return this.adminModel.create({ ...dto, password: hashed });
+    const hashedPassword = await this.authService.hashPassword(dto.password);
+    const admin = this.repoAdmin.create({ ...dto, password: hashedPassword });
+    return this.repoAdmin.save(admin);
   }
 
-  async findAll() {
-    return this.adminModel.findAll();
+  findAll() {
+    return this.repoAdmin.find();
   }
 
-  async findOne(id: number) {
-    const admin = await this.adminModel.findByPk(id);
-    if (!admin) throw new NotFoundException("Admin not found");
-    return admin;
+  findOne(id: number) {
+    return this.repoAdmin.findOne({ where: { id } });
   }
 
-  async update(id: number, dto: UpdateAdminDto) {
-    const admin = await this.findOne(id);
-    return admin.update(dto);
+  update(id: number, dto: UpdateAdminDto) {
+    return this.repoAdmin.update(id, dto);
   }
 
-  async remove(id: number) {
-    const admin = await this.findOne(id);
-    return admin.destroy();
+  remove(id: number) {
+    return this.repoAdmin.delete(id);
+  }
+
+  async login(email: string, password: string) {
+    const admin = await this.repoAdmin.findOne({ where: { email } });
+    if (!admin) throw new UnauthorizedException("User not found");
+
+    const match = await this.authService.comparePassword(
+      password,
+      admin.password
+    );
+    if (!match) throw new UnauthorizedException("Wrong password");
+
+    return this.authService.generateToken({
+      sub: admin.id,
+      email: admin.email,
+      role: "admin",
+    });
   }
 }

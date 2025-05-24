@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class Admin {
+export class Teacher {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -20,8 +20,12 @@ export class Admin {
   @Column()
   password: string;
 
-  @Column({ default: false })
-  is_creator: boolean;
+  @Column({
+    type: "enum",
+    enum: ["lecturer", "assistant"],
+    default: "lecturer",
+  })
+  role: "lecturer" | "assistant";
 
   @Column({ default: true })
   is_active: boolean;
