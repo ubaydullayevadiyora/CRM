@@ -7,19 +7,22 @@ import { Teacher } from "../teacher/entities/teacher.entity";
 import { Admin } from "../admins/model/admin.model";
 import { AdminModule } from "../admins/admins.module";
 import { TeacherModule } from "../teacher/teacher.module";
+import { StudentsModule } from "../students/students.module";
+import { Student } from "../students/entities/student.entity";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Admin, Teacher]),
+    TypeOrmModule.forFeature([Admin, Teacher, Student]),
     JwtModule.register({
       secret: process.env.JWT_SECRET || "secretKey",
       signOptions: { expiresIn: "1d" },
     }),
-    forwardRef(() => AdminModule), // 🔁 oldini olish uchun
-    forwardRef(() => TeacherModule), // 🔁 oldini olish uchun
+    forwardRef(() => AdminModule),
+    forwardRef(() => TeacherModule),
+    forwardRef(() => StudentsModule),
   ],
   providers: [AuthService],
   controllers: [AuthController],
-  exports: [AuthService], // ✅ shu joy muhim!
+  exports: [AuthService],
 })
 export class AuthModule {}

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { Admin } from "./model/admin.model";
 import { AuthService } from "../auth/auth.service";
 import { CreateAdminDto } from "./dto/create-admin.dto";
@@ -10,7 +10,7 @@ import { Repository } from "typeorm";
 export class AdminService {
   constructor(
     @InjectRepository(Admin) private repoAdmin: Repository<Admin>,
-    private authService: AuthService
+    @Inject(forwardRef(() => AuthService)) private authService: AuthService
   ) {}
 
   async create(dto: CreateAdminDto) {
@@ -50,5 +50,8 @@ export class AdminService {
       email: admin.email,
       role: "admin",
     });
+  }
+  async findByEmail(email: string): Promise<Admin | null> {
+    return this.repoAdmin.findOneBy({ email });
   }
 }

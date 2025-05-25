@@ -1,4 +1,4 @@
-import { Controller, Post, Body, BadRequestException } from "@nestjs/common";
+import { Body, Controller, Post } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { LoginDto } from "./dto/admin-login.dto";
 
@@ -6,14 +6,18 @@ import { LoginDto } from "./dto/admin-login.dto";
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post("login")
-  async login(@Body() loginDto: LoginDto) {
-    const { email, password, role } = loginDto;
+  @Post("admin/login")
+  async adminLogin(@Body() dto: LoginDto) {
+    return this.authService.loginAdmin(dto.email, dto.password);
+  }
 
-    if (!role || (role !== "admin" && role !== "teacher")) {
-      throw new BadRequestException("Role must be either admin or teacher");
-    }
+  @Post("teacher/login")
+  async teacherLogin(@Body() dto: LoginDto) {
+    return this.authService.loginTeacher(dto.email, dto.password);
+  }
 
-    return this.authService.login(email, password, role);
+  @Post("student/login")
+  async studentLogin(@Body() dto: LoginDto) {
+    return this.authService.loginStudent(dto.email, dto.password);
   }
 }

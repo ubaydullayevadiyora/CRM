@@ -5,24 +5,28 @@ import { Teacher } from "./teacher/entities/teacher.entity";
 import { AuthModule } from "./auth/auth.module";
 import { AdminModule } from "./admins/admins.module";
 import { TeacherModule } from "./teacher/teacher.module";
+import { StudentsModule } from './students/students.module';
+import { CoursesModule } from './courses/courses.module';
 
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: "postgres", // yoki 'mysql', 'sqlite', va h.k.
+      type: "postgres", 
       host: "localhost",
       port: 5432,
       username: "postgres",
-      password: "password",
+      password: "1234", 
       database: "crm",
       entities: [Admin, Teacher],
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([Admin, Teacher]), // Bu ham kerak!
+    TypeOrmModule.forFeature([Admin, Teacher]), 
     AuthModule,
     AdminModule,
     TeacherModule,
+    StudentsModule,
+    CoursesModule,
   ],
 })
 export class AppModule {}

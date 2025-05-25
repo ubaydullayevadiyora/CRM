@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Teacher } from "./entities/teacher.entity"
@@ -10,7 +10,7 @@ import { AuthService } from "../auth/auth.service";
 export class TeacherService {
   constructor(
     @InjectRepository(Teacher) private repo: Repository<Teacher>,
-    private authService: AuthService
+    @Inject(forwardRef(() => AuthService)) private authService: AuthService
   ) {}
 
   async create(dto: CreateTeacherDto) {
@@ -50,5 +50,9 @@ export class TeacherService {
       email: teacher.email,
       role: teacher.role,
     });
+  }
+
+  async findByEmail(email: string): Promise<Teacher | null> {
+    return this.repo.findOneBy({ email });
   }
 }

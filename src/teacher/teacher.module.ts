@@ -10,8 +10,8 @@ import { TeacherController } from "./teacher.controller";
 @Module({
   imports: [
     TypeOrmModule.forFeature([Teacher]),
-    forwardRef(() => AuthModule), // 👈 AuthService shu modul orqali kelsin
-    forwardRef(() => AdminModule), // 👈 ehtimoliy aylanma bog‘liqlik bo‘lsa
+    forwardRef(() => AuthModule), 
+    forwardRef(() => AdminModule), 
     JwtModule.register({
       secret: process.env.JWT_SECRET || "secretKey",
       signOptions: { expiresIn: "1d" },
