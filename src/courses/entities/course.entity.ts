@@ -1,5 +1,6 @@
 import { ObjectType, Field, ID } from "@nestjs/graphql";
-import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
+import { Group } from "../../groups/entities/group.entity";
 
 @ObjectType()
 @Entity("courses")
@@ -31,4 +32,7 @@ export class Course {
   @Field()
   @Column()
   lesson_duration: number;
+
+  @OneToMany(() => Group, (group) => group.course)
+  groups: Group[];
 }

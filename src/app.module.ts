@@ -7,7 +7,12 @@ import { AdminModule } from "./admins/admins.module";
 import { TeacherModule } from "./teacher/teacher.module";
 import { StudentsModule } from './students/students.module';
 import { CoursesModule } from './courses/courses.module';
-
+import { GroupsModule } from './groups/groups.module';
+import { TeacherGroupsModule } from "./teacher_group/teacher_group.module";
+import { Student } from "./students/entities/student.entity";
+import { SchedulesModule } from './schedules/schedules.module';
+import { StudentGroupsModule } from "./student_group/student_group.module";
+import { AttendancesModule } from "./attendance/attendance.module";
 
 @Module({
   imports: [
@@ -21,12 +26,17 @@ import { CoursesModule } from './courses/courses.module';
       entities: [Admin, Teacher],
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([Admin, Teacher]), 
+    TypeOrmModule.forFeature([Admin, Teacher, Student]), 
     AuthModule,
     AdminModule,
     TeacherModule,
     StudentsModule,
     CoursesModule,
+    GroupsModule,
+    TeacherGroupsModule,
+    StudentGroupsModule,
+    SchedulesModule,
+    AttendancesModule,
   ],
 })
 export class AppModule {}
